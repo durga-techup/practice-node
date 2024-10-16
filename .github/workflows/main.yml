@@ -1,31 +1,27 @@
-name: Deploy to Netlify
-
+# .github/workflows/netlify.yml
+name: Build and Deploy to Netlify
 on:
   push:
-    branches:
-      - main  # Trigger deployment on push to the main branch
-
+  pull_request:
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-
+  build:
+    runs-on: ubuntu-22.04
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '20.18.0'  # You can adjust this to the version of Node.js your project needs
+      # ( Build to ./dist or other directory... )
 
-    - name: Install dependencies
-      run: npm install  # Adjust this if you're using yarn or another package manager
-
-    - name: Build project
-      run: npm run build  # Adjust this to your build command if needed
-
-    - name: Deploy to Netlify
-      run: npx netlify deploy --prod --dir=build
-      env:
-        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}  # Use GitHub secrets to store the token
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}  # Store your Netlify site ID as a GitHub secret
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v3.0
+        with:
+          publish-dir: './dist'
+          production-branch: master
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        timeout-minutes: 1
